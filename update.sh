@@ -495,6 +495,35 @@ remove_old_folders() {
     done
 }
 
+preserve_user_folders() {
+    local source_minecraft="$1"
+    local dest_minecraft="$2"
+
+    # User-specific folders that should be preserved from the old instance
+    local user_folders=("shaderpacks" "resourcepacks" "saves" "screenshots")
+    local user_files=("options.txt" "servers.dat" "optionsof.txt" "optionsshaders.txt")
+
+    log_info "Preserving user-specific folders and files..."
+
+    for folder in "${user_folders[@]}"; do
+        if [[ -d "$source_minecraft/$folder" ]]; then
+            # Remove if exists in destination (from archive), then copy from source
+            if [[ -d "$dest_minecraft/$folder" ]]; then
+                do_rm -rf "$dest_minecraft/$folder"
+            fi
+            do_cp -a "$source_minecraft/$folder" "$dest_minecraft/"
+            log_info "  Preserved: $folder/"
+        fi
+    done
+
+    for file in "${user_files[@]}"; do
+        if [[ -f "$source_minecraft/$file" ]]; then
+            do_cp -a "$source_minecraft/$file" "$dest_minecraft/"
+            log_info "  Preserved: $file"
+        fi
+    done
+}
+
 remove_java17_files() {
     local instance_dir="$1"
     local items=("libraries" "patches" "mmc-pack.json")
@@ -734,6 +763,10 @@ main() {
     # Step 8: Update instance name
     log_info "Step 8: Updating instance configuration..."
     update_instance_name "$NEW_INSTANCE_DIR" "$NEW_INSTANCE_NAME"
+
+    # Step 9: Preserve user-specific folders from original instance
+    log_info "Step 9: Preserving user data..."
+    preserve_user_folders "$INSTANCE_DIR/.minecraft" "$NEW_INSTANCE_DIR/.minecraft"
 
     log_success "New instance files installed!"
 
