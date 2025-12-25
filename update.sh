@@ -423,14 +423,8 @@ find_instance_root() {
     fi
 
     # For Java 17+ files, we need the instance root (parent of .minecraft)
-    # Look for mmc-pack.json or libraries folder
+    # Look for mmc-pack.json - handle paths with spaces properly
     local instance_root
-    instance_root=$(find "$extract_dir" -type f -name "mmc-pack.json" 2>/dev/null | head -1 | xargs dirname 2>/dev/null)
-
-    if [[ -n "$instance_root" ]]; then
-        echo "$instance_root"
-        return 0
-    fi
 
     # Check extract_dir itself
     if [[ -f "$extract_dir/mmc-pack.json" ]]; then
@@ -438,7 +432,17 @@ find_instance_root() {
         return 0
     fi
 
-    # Check one level deep
+    # Check subdirectories (handles spaces in names)
+    while IFS= read -r -d '' mmc_file; do
+        instance_root=$(dirname "$mmc_file")
+        if [[ -n "$instance_root" ]]; then
+            log_info "Found instance root at: $instance_root"
+            echo "$instance_root"
+            return 0
+        fi
+    done < <(find "$extract_dir" -type f -name "mmc-pack.json" -print0 2>/dev/null)
+
+    # Fallback: check one level deep manually
     for subdir in "$extract_dir"/*/; do
         if [[ -f "${subdir}mmc-pack.json" ]]; then
             echo "${subdir%/}"
