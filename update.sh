@@ -360,7 +360,7 @@ extract_archive() {
 
     case "$archive_type" in
         zip)
-            $UNZIP_CMD -q "$archive" -d "$dest"
+            $UNZIP_CMD -o -q "$archive" -d "$dest"
             ;;
         tar.gz)
             $TAR_CMD -xzf "$archive" -C "$dest"
