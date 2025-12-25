@@ -1,0 +1,23 @@
+# Archives
+*.zip
+*.tar.gz
+*.tar
+
+# Test instances
+GTNH*/
+*_instance/
+
+# Temporary files
+*.tmp
+*.log
+
+# Editor files
+*.swp
+*.swo
+*~
+.vscode/
+.idea/
+
+# OS files
+.DS_Store
+Thumbs.db
